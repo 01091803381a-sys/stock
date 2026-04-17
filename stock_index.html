@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockBoard - 종합 주식 현황판</title>
+    <link rel="stylesheet" href="stock_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-theme">
+    <div id="app">
+        <!-- 상단 지수 티커 -->
+        <div class="ticker-wrap">
+            <div class="ticker">
+                <div class="ticker__item">KOSPI <span class="down">6,195.46 (-0.49%)</span></div>
+                <div class="ticker__item">KOSDAQ <span class="up">1,163.52 (+0.05%)</span></div>
+                <div class="ticker__item">NASDAQ <span class="up">24,102.70 (+0.36%)</span></div>
+                <div class="ticker__item">S&P 500 <span class="up">7,041.28 (+0.26%)</span></div>
+                <div class="ticker__item">USD/KRW <span class="up">1,479.90 (+0.36%)</span></div>
+                <div class="ticker__item">KODEX 200 <span class="down">82,450 (-0.48%)</span></div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- 좌측 사이드바 -->
+            <aside class="sidebar">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i> StockBoard
+                </div>
+                <nav>
+                    <ul>
+                        <li class="active" data-tab="domestic"><i class="fas fa-krw"></i> 국내 주식</li>
+                        <li data-tab="overseas"><i class="fas fa-globe-americas"></i> 해외 주식</li>
+                        <li data-tab="etf"><i class="fas fa-layer-group"></i> ETF (KODEX/TIGER)</li>
+                        <li data-tab="watchlist"><i class="fas fa-star"></i> 관심 종목</li>
+                    </ul>
+                </nav>
+                <div class="sidebar-footer">
+                    <button id="theme-toggle"><i class="fas fa-moon"></i> 다크 모드</button>
+                </div>
+            </aside>
+
+            <!-- 메인 컨텐츠 -->
+            <main class="content">
+                <header class="content-header">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="종목명 또는 심볼 입력 (예: 삼성전자, AAPL, KODEX 200)">
+                    </div>
+                    <div class="user-profile">
+                        <i class="fas fa-bell"></i>
+                        <img src="https://via.placeholder.com/32" alt="Profile" class="avatar">
+                    </div>
+                </header>
+
+                <div class="dashboard-grid">
+                    <!-- 종목 상세 정보 카드 -->
+                    <div class="card stock-detail">
+                        <div class="detail-header">
+                            <div>
+                                <h2 id="stock-name">삼성전자</h2>
+                                <span id="stock-symbol">005930.KS</span>
+                            </div>
+                            <div class="price-info">
+                                <span id="current-price">78,500</span>
+                                <span id="price-change" class="up">+1,200 (+1.55%)</span>
+                            </div>
+                        </div>
+                        <div class="chart-controls">
+                            <button class="active" data-range="1D">일간</button>
+                            <button data-range="1W">주간</button>
+                            <button data-range="1M">월간</button>
+                            <button data-range="1Y">연간</button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="mainChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 실시간 뉴스 카드 -->
+                    <div class="card news-section">
+                        <h3><i class="far fa-newspaper"></i> 주요 뉴스</h3>
+                        <ul id="news-list">
+                            <!-- JS로 생성 -->
+                        </ul>
+                    </div>
+
+                    <!-- 재무 요약 카드 -->
+                    <div class="card financial-section">
+                        <h3><i class="fas fa-table"></i> 재무제표 요약 (최근 연간)</h3>
+                        <table class="financial-table">
+                            <thead>
+                                <tr>
+                                    <th>항목</th>
+                                    <th>2025(A)</th>
+                                    <th>2024(A)</th>
+                                    <th>2023(A)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="financial-body">
+                                <!-- JS로 생성 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 시총 상위 리스트 -->
+                    <div class="card market-cap-section">
+                        <h3 id="list-title">시가총액 상위 10대 기업</h3>
+                        <ul id="market-cap-list">
+                            <!-- JS로 생성 -->
+                        </ul>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="stock_script.js"></script>
+</body>
+</html>
