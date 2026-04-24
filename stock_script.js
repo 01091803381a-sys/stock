@@ -52,7 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchYahooData(yahooSymbol, range = '1d') {
         const interval = range === '1d' ? '5m' : (range === '1w' ? '30m' : '1d');
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?range=${range}&interval=${interval}`)}`;
+        const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?range=${range}&interval=${interval}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_t=${Date.now()}`;
         try {
             const response = await fetch(proxyUrl);
             const rawData = await response.json();
