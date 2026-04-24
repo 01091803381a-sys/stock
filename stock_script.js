@@ -10,28 +10,28 @@ document.addEventListener('DOMContentLoaded', () => {
         updateChartTheme();
     });
 
-    // 데이터 초기화
+    // 데이터 초기화 (심볼 정보 업데이트)
     const marketData = {
         domestic: [
-            { name: '삼성전자', symbol: '005930', price: '216,500', change: '-0.46%', cap: '1,298조' },
-            { name: 'SK하이닉스', symbol: '000660', price: '1,130,500', change: '+2.12%', cap: '822조' },
-            { name: 'LG에너지솔루션', symbol: '373220', price: '416,000', change: '-0.50%', cap: '97조' },
-            { name: '삼성바이오로직스', symbol: '207940', price: '1,601,000', change: '+0.10%', cap: '113조' },
-            { name: '현대차', symbol: '005380', price: '537,500', change: '+0.66%', cap: '112조' }
+            { name: '삼성전자', symbol: '005930', google: '005930:KRX', yahoo: '005930.KS', price: '219,500', change: '-2.23%', cap: '1,298조' },
+            { name: 'SK하이닉스', symbol: '000660', google: '000660:KRX', yahoo: '000660.KS', price: '1,130,500', change: '+2.12%', cap: '822조' },
+            { name: 'LG에너지솔루션', symbol: '373220', google: '373220:KRX', yahoo: '373220.KS', price: '416,000', change: '-0.50%', cap: '97조' },
+            { name: '삼성바이오로직스', symbol: '207940', google: '207940:KRX', yahoo: '207940.KS', price: '1,601,000', change: '+0.10%', cap: '113조' },
+            { name: '현대차', symbol: '005380', google: '005380:KRX', yahoo: '005380.KS', price: '537,500', change: '+0.66%', cap: '112조' }
         ],
         overseas: [
-            { name: 'Apple Inc.', symbol: 'AAPL', price: '263.40', change: '+1.14%', cap: '$4.12T' },
-            { name: 'Microsoft', symbol: 'MSFT', price: '420.26', change: '+2.20%', cap: '$3.12T' },
-            { name: 'NVIDIA', symbol: 'NVDA', price: '198.14', change: '+1.00%', cap: '$4.89T' },
-            { name: 'Alphabet A', symbol: 'GOOGL', price: '337.12', change: '+0.33%', cap: '$4.17T' },
-            { name: 'Tesla', symbol: 'TSLA', price: '388.90', change: '-0.78%', cap: '$1.23T' }
+            { name: 'Apple Inc.', symbol: 'AAPL', google: 'AAPL:NASDAQ', yahoo: 'AAPL', price: '263.40', change: '+1.14%', cap: '$4.12T' },
+            { name: 'Microsoft', symbol: 'MSFT', google: 'MSFT:NASDAQ', yahoo: 'MSFT', price: '420.26', change: '+2.20%', cap: '$3.12T' },
+            { name: 'NVIDIA', symbol: 'NVDA', google: 'NVDA:NASDAQ', yahoo: 'NVDA', price: '198.14', change: '+1.00%', cap: '$4.89T' },
+            { name: 'Alphabet A', symbol: 'GOOGL', google: 'GOOGL:NASDAQ', yahoo: 'GOOGL', price: '337.12', change: '+0.33%', cap: '$4.17T' },
+            { name: 'Tesla', symbol: 'TSLA', google: 'TSLA:NASDAQ', yahoo: 'TSLA', price: '388.90', change: '-0.78%', cap: '$1.23T' }
         ],
         etf: [
-            { name: 'KODEX 200', symbol: '069500', price: '82,450', change: '-0.48%', cap: '6.5조' },
-            { name: 'TIGER 미국나스닥100', symbol: '133690', price: '156,200', change: '+0.36%', cap: '3.2조' },
-            { name: 'KODEX 삼성그룹', symbol: '102780', price: '15,850', change: '-0.10%', cap: '1.8조' },
-            { name: 'TIGER 2차전지테마', symbol: '305540', price: '25,400', change: '-1.50%', cap: '1.2조' },
-            { name: 'KODEX 미국S&P500TR', symbol: '379800', price: '22,800', change: '+0.26%', cap: '0.9조' }
+            { name: 'KODEX 200', symbol: '069500', google: '069500:KRX', yahoo: '069500.KS', price: '82,450', change: '-0.48%', cap: '6.5조' },
+            { name: 'TIGER 미국나스닥100', symbol: '133690', google: '133690:KRX', yahoo: '133690.KS', price: '156,200', change: '+0.36%', cap: '3.2조' },
+            { name: 'KODEX 삼성그룹', symbol: '102780', google: '102780:KRX', yahoo: '102780.KS', price: '15,850', change: '-0.10%', cap: '1.8조' },
+            { name: 'TIGER 2차전지테마', symbol: '305540', google: '305540:KRX', yahoo: '305540.KS', price: '25,400', change: '-1.50%', cap: '1.2조' },
+            { name: 'KODEX 미국S&P500TR', symbol: '379800', google: '379800:KRX', yahoo: '379800.KS', price: '22,800', change: '+0.26%', cap: '0.9조' }
         ]
     };
 
@@ -55,17 +55,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = document.getElementById('mainChart').getContext('2d');
     let mainChart;
 
-    function initChart() {
-        const labels = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '15:30'];
-        const data = [77300, 77800, 77500, 78100, 78400, 78200, 78500];
+    async function fetchRealTimePrice(googleSymbol) {
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.google.com/finance/quote/${googleSymbol}`)}`;
+        try {
+            const response = await fetch(proxyUrl);
+            const data = await response.json();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data.contents, 'text/html');
+            
+            // 구글 파이낸스 가격 및 변동률 셀렉터 (변동 가능)
+            const priceEl = doc.querySelector('.YMlS1d');
+            const changeEl = doc.querySelector('.Jw7Xdb');
+            
+            if (priceEl && changeEl) {
+                return {
+                    price: priceEl.innerText.replace('₩', '').trim(),
+                    change: changeEl.innerText.trim()
+                };
+            }
+        } catch (e) {
+            console.error("Price fetch error:", e);
+        }
+        return null;
+    }
 
+    async function fetchChartData(yahooSymbol, range = '1d') {
+        const interval = range === '1d' ? '5m' : (range === '1w' ? '30m' : '1d');
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?range=${range}&interval=${interval}`)}`;
+        try {
+            const response = await fetch(proxyUrl);
+            const data = await response.json();
+            const result = JSON.parse(data.contents).chart.result[0];
+            
+            const timestamps = result.timestamp;
+            const prices = result.indicators.quote[0].close;
+            
+            const labels = timestamps.map(ts => {
+                const date = new Date(ts * 1000);
+                return range === '1d' ? `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}` : `${date.getMonth() + 1}/${date.getDate()}`;
+            });
+
+            return { labels, data: prices };
+        } catch (e) {
+            console.error("Chart fetch error:", e);
+        }
+        return null;
+    }
+
+    function initChart() {
         mainChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: [],
                 datasets: [{
                     label: '주가',
-                    data: data,
+                    data: [],
                     borderColor: '#ef4444',
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
                     fill: true,
@@ -78,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8', maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
                     y: { grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8' } }
                 }
             }
@@ -146,18 +190,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function updateStockDetail(item) {
+    async function updateStockDetail(item) {
         document.getElementById('stock-name').innerText = item.name;
-        document.getElementById('stock-symbol').innerText = item.symbol;
-        document.getElementById('current-price').innerText = item.price;
-        const changeEl = document.getElementById('price-change');
-        changeEl.innerText = item.change;
-        changeEl.className = item.change.includes('+') ? 'up' : 'down';
+        document.getElementById('stock-symbol').innerText = item.google || item.symbol;
         
-        // 차트 랜덤 업데이트 (데모)
-        mainChart.data.datasets[0].data = mainChart.data.datasets[0].data.map(v => v * (0.98 + Math.random() * 0.04));
-        mainChart.data.datasets[0].borderColor = item.change.includes('+') ? '#ef4444' : '#3b82f6';
-        mainChart.update();
+        // 실시간 데이터 패치
+        const realTime = await fetchRealTimePrice(item.google);
+        if (realTime) {
+            document.getElementById('current-price').innerText = realTime.price;
+            const changeEl = document.getElementById('price-change');
+            changeEl.innerText = realTime.change;
+            changeEl.className = realTime.change.includes('+') ? 'up' : 'down';
+        } else {
+            document.getElementById('current-price').innerText = item.price;
+            const changeEl = document.getElementById('price-change');
+            changeEl.innerText = item.change;
+            changeEl.className = item.change.includes('+') ? 'up' : 'down';
+        }
+        
+        // 차트 데이터 패치
+        const range = document.querySelector('.chart-controls button.active').dataset.range.toLowerCase();
+        const chartData = await fetchChartData(item.yahoo, range);
+        
+        if (chartData) {
+            mainChart.data.labels = chartData.labels;
+            mainChart.data.datasets[0].data = chartData.data;
+            const isUp = (realTime ? realTime.change : item.change).includes('+');
+            mainChart.data.datasets[0].borderColor = isUp ? '#ef4444' : '#3b82f6';
+            mainChart.data.datasets[0].backgroundColor = isUp ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)';
+            mainChart.update();
+        }
     }
 
     // 탭 이벤트
@@ -170,9 +232,62 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // 차트 기간 조절 이벤트
+    const rangeButtons = document.querySelectorAll('.chart-controls button');
+    rangeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            rangeButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // 현재 선택된 종목 다시 로드
+            const currentSymbol = document.getElementById('stock-symbol').innerText;
+            // 리스트에서 해당 심볼 찾기
+            let foundItem = null;
+            Object.values(marketData).forEach(list => {
+                const item = list.find(i => i.google === currentSymbol || i.symbol === currentSymbol);
+                if (item) foundItem = item;
+            });
+            if (foundItem) updateStockDetail(foundItem);
+        });
+    });
+
+    // 티커 업데이트 함수
+    async function updateTicker() {
+        const tickerItems = [
+            { id: 'ticker-kospi', name: 'KOSPI', google: 'INDEXKRX:KOSPI' },
+            { id: 'ticker-kosdaq', name: 'KOSDAQ', google: 'INDEXKRX:KOSDAQ' },
+            { id: 'ticker-nasdaq', name: 'NASDAQ', google: 'INDEXNASDAQ:.IXIC' },
+            { id: 'ticker-sp500', name: 'S&P 500', google: 'INDEXSP:.INX' },
+            { id: 'ticker-usdkrw', name: 'USD/KRW', google: 'CURRENCY:USDKRW' }
+        ];
+
+        const tickerContainer = document.querySelector('.ticker');
+        tickerContainer.innerHTML = ''; // 초기화
+
+        for (const item of tickerItems) {
+            const data = await fetchRealTimePrice(item.google);
+            const tickerItem = document.createElement('div');
+            tickerItem.className = 'ticker__item';
+            
+            if (data) {
+                const isUp = data.change.includes('+');
+                tickerItem.innerHTML = `${item.name} <span class="${isUp ? 'up' : 'down'}">${data.price} (${data.change})</span>`;
+            } else {
+                tickerItem.innerHTML = `${item.name} <span>로딩 중...</span>`;
+            }
+            tickerContainer.appendChild(tickerItem);
+        }
+    }
+
     // 초기 실행
     initChart();
     renderMarketCapList('domestic');
     renderNews();
     renderFinancials();
+    updateTicker();
+
+    // 초기 종목(삼성전자) 로드
+    updateStockDetail(marketData.domestic[0]);
 });
+
+
